@@ -11,6 +11,8 @@ import torch
 
 from .optimal_transport import OTPlanSampler
 
+from .optimal_transport import SinkhornSampler
+
 
 def pad_t_like_x(t, x):
     if isinstance(t, float):
@@ -438,3 +440,51 @@ class VariancePreservingConditionalFlowMatcher(ConditionalFlowMatcher):
     def compute_conditional_flow(self, x0, x1, t, xt):
         del xt
         return math.pi / 2 * (torch.cos(math.pi / 2 * t) * x1 - torch.sin(math.pi / 2 * t) * x0)
+
+class SinkhornFlowMatcher:
+    def __init__(self, blur = 0.05, scaling = 0.95, backend = 'online', lr = 0.01, device = 'cuda:0'):
+        self.blur = blur
+        self.scaling = scaling
+        self.backend = backend
+        self.lr = lr
+        self.device = device
+        self.SD = SinkhornSampler(backend=self.backend, blur=self.blur, scaling=self.scaling, SD_lr=lr, device=self.device)
+        self.xt = []
+        self.vt = []
+
+
+    def sample_location_and_conditional_flow(self, x0, x1, t):
+        self.SD.set_bs_t_particles(batch_size=x0.shape[0], T=t, particles=x0)
+        self.SD.sample_trajectory(x1)
+        vector_field, x_traj = self.SD.sample_state()
+        t = torch.randint(0, t, (x0.shape[0],)).type_as(x0).to(self.device)
+        for i in range(t.shape[0]):
+            flag = int(t[i].item())
+            self.xt.append(x_traj[flag][i])
+            self.vt.append(vector_field[flag][i])
+        return t / 100, torch.stack(self.xt), torch.stack(self.vt)
+    
+    def clear_all(self):
+        self.xt = []
+        self.vt = []
+
+    def data_extension_sample_location_and_conditional_flow(self, x0, x1, t, n):
+        self.SD.set_bs_t_particles(batch_size=x0.shape[0], T=t, particles=x0)
+        self.SD.sample_trajectory(x1)
+        vector_field, x_traj = self.SD.sample_state()
+        v_return = []
+        x_return = []
+        t_return = []
+        for i in range(n):
+            t_batch = torch.randint(0, t, (x0.shape[0],)).type_as(x0).to(self.device)
+            t_return.append(t_batch / 100)
+            for i in range(t_batch.shape[0]):
+                flag = int(t_batch[i].item())
+                self.xt.append(x_traj[flag][i])
+                self.vt.append(vector_field[flag][i])
+            v_return.append(torch.stack(self.vt))
+            x_return.append(torch.stack(self.xt))
+            self.clear_all()
+        return torch.stack(t_return), torch.stack(x_return), torch.stack(v_return)
+    
+

@@ -171,3 +171,6 @@ slurm*.out
 *.jpg
 
 notebooks/figures/
+
+# my ignore
+test/*

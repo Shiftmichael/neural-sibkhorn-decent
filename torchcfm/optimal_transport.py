@@ -5,6 +5,10 @@ from typing import Optional
 import numpy as np
 import ot as pot
 import torch
+from .Sinkhorn_decent import SD
+import matplotlib.pyplot as plt
+import geomloss
+
 
 
 class OTPlanSampler:
@@ -116,3 +120,63 @@ def wasserstein(
     if power == 2:
         ret = math.sqrt(ret)
     return ret
+
+
+class SinkhornSampler:
+    def __init__(
+        self,
+        backend = 'online',
+        blur = 0.05,
+        scaling = 0.95,
+        device = 'cuda:0',
+        SD_lr = 0.01,
+        **kwargs
+    ):
+        self.kwargs = kwargs
+        self.algorithm = SD(backend=backend, blur=blur, scaling=scaling)
+        self.tgt_mass = None
+        self.init_mass = None
+        self.support = None
+        self.T = 100
+        self.SD_lr = SD_lr
+        self.batch_size = 128
+        self.particles = None
+        self.device = device
+        self.record_sinkdiv = []
+        self.record_support = []
+    
+    def set_bs_t_particles(self, batch_size = None, T = None, particles = None):
+        self.batch_size = batch_size
+        self.T = T
+        self.support = particles
+        self.tgt_mass = torch.ones(batch_size, device = self.device) / batch_size
+        self.init_mass = torch.ones(batch_size, device = self.device) / batch_size
+
+
+    def sample_trajectory(self, x1):
+        for step in range(self.T):
+            # use Index sd_lr * exp((t - T) / (T / 4))  
+            # lr = self.opts.SD_lr * math.exp((step - self.opts.T) / (self.opts.T / 4))
+            lr = self.SD_lr
+            self.algorithm.one_step_update(
+                step_size = lr,
+                init_particles = self.support,
+                init_mass = self.init_mass,
+                tgt_support = x1,
+                tgt_mass = self.tgt_mass
+            )
+            support, _, vector = self.algorithm.get_state()
+            # sinkhorn_divergence = geomloss.SamplesLoss(loss="sinkhorn", p=2, blur=0.05, scaling=0.9)
+            # sinkhorn_distance = sinkhorn_divergence(support, x1)
+            # print('sinkhorn', sinkhorn_distance)
+            # plt.figure(figsize=(6, 6))
+            # plt.scatter(support[:, 0].to('cpu'), support[:, 1].to('cpu'), s=10, alpha=0.8, c="black")
+            # plt.xticks([])
+            # plt.yticks([])
+            # plt.savefig(f'./test/sinkhorn/sink_{step}')
+            self.support = support
+            self.record_sinkdiv.append(vector)   #[time, batch_size, 3*32*32]
+            self.record_support.append(support)  #[time, batch_size, 3*32*32]
+
+    def sample_state(self):
+        return torch.stack(self.record_sinkdiv), torch.stack(self.record_support)
