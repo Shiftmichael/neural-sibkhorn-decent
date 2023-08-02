@@ -177,6 +177,6 @@ class SinkhornSampler:
             self.support = support
             self.record_sinkdiv.append(vector)   #[time, batch_size, 3*32*32]
             self.record_support.append(support)  #[time, batch_size, 3*32*32]
-
+    @torch.no_grad()
     def sample_state(self):
         return torch.stack(self.record_sinkdiv), torch.stack(self.record_support)
