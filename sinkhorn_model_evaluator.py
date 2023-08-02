@@ -23,7 +23,7 @@ t = 100
 dim = 2
 batch_size = 1024
 retrain = 50
-model = torch.load('./models/8gaussian-moons_sinkhorn/lr0.045_t100_retrain50/cfm_v1_1.pt')
+model = torch.load('./models/8gaussian-moons_sinkhorn/lr0.045_t100_retrain50/cfm_v1_200.pt')
 model.eval()
 x0 = sample_8gaussians(1024)
 xt = x0
@@ -37,4 +37,4 @@ plt.figure(figsize=(6, 6))
 plt.scatter(xt[:, 0], xt[:, 1], s=4, alpha=1, c="blue")
 plt.xticks([])
 plt.yticks([])
-plt.savefig(f'./test/lr0.045_retrain50_t100/sink_dataext_retrain50_myevaluator')
+plt.savefig(f'./test/lr0.045_retrain50_t100/sink_dataext_retrain50_myevaluator_200')

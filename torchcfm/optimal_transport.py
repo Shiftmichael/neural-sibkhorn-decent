@@ -166,14 +166,14 @@ class SinkhornSampler:
                 tgt_mass = self.tgt_mass
             )
             support, _, vector = self.algorithm.get_state()
-            sinkhorn_divergence = geomloss.SamplesLoss(loss="sinkhorn", p=2, blur=0.05, scaling=0.9)
-            sinkhorn_distance = sinkhorn_divergence(support, x1)
-            print('sinkhorn', sinkhorn_distance)
-            plt.figure(figsize=(6, 6))
-            plt.scatter(support[:, 0].to('cpu'), support[:, 1].to('cpu'), s=10, alpha=0.8, c="black")
-            plt.xticks([])
-            plt.yticks([])
-            plt.savefig(f'./test/sinkhorn/sink_{step}')
+            # sinkhorn_divergence = geomloss.SamplesLoss(loss="sinkhorn", p=2, blur=0.05, scaling=0.9)
+            # sinkhorn_distance = sinkhorn_divergence(support, x1)
+            # print('sinkhorn', sinkhorn_distance)
+            # plt.figure(figsize=(6, 6))
+            # plt.scatter(support[:, 0].to('cpu'), support[:, 1].to('cpu'), s=10, alpha=0.8, c="black")
+            # plt.xticks([])
+            # plt.yticks([])
+            # plt.savefig(f'./test/sinkhorn/sink_{step}')
             self.support = support
             self.record_sinkdiv.append(vector)   #[time, batch_size, 3*32*32]
             self.record_support.append(support)  #[time, batch_size, 3*32*32]
