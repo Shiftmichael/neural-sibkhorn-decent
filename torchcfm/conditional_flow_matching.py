@@ -7,6 +7,8 @@
 
 import math
 
+import random
+
 import torch
 
 from .optimal_transport import OTPlanSampler
@@ -486,5 +488,22 @@ class SinkhornFlowMatcher:
             x_return.append(torch.stack(self.xt))
             self.clear_all()
         return torch.stack(t_return), torch.stack(x_return), torch.stack(v_return)
+    
+    def same_time_training_sample_location_and_conditional_flow(self, x0, x1, t, n):
+        self.SD.set_bs_t_particles(batch_size=x0.shape[0], T=t, particles=x0)
+        self.SD.sample_trajectory(x1)
+        vector_field, x_traj = self.SD.sample_state()
+        v_return = []
+        x_return = []
+        t_return = []
+        for i in range(n):
+            t_batch = torch.ones(x0.shape[0]).type_as(x0).to(self.device)
+            t_choice = random.randint(0, t)
+            t_return.append(t_batch * t_choice / 100)
+            v_return.append(vector_field[t_choice])
+            x_return.append(x_traj[t_choice])
+        self.clear_all()
+        return torch.stack(t_return), torch.stack(x_return), torch.stack(v_return)
+    
     
 

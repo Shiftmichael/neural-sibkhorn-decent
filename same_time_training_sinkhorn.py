@@ -14,13 +14,13 @@ from torchcfm.conditional_flow_matching import *
 from torchcfm.models.models import *
 from torchcfm.utils import *
 
-savedir = "models/8gaussian-moons_sinkhorn/lr0.02_t100_retrain50"
+savedir = "models/8gaussian-moons_sinkhorn/lr0.02_t100_retrain50_same_time_training"
 os.makedirs(savedir, exist_ok=True)
-imgdir = './test/lr0.02_retrain50_t100'
+imgdir = './test/lr0.02_retrain50_t100_same_time_training'
 os.makedirs(imgdir, exist_ok=True)
 
 blur = 0.05
-scaling = 0.95
+scaling = 0.9
 backend = 'online'
 lr = 0.02
 device = 'cuda:0'
@@ -40,7 +40,7 @@ for k in range(1000):
     x0 = sample_8gaussians(batch_size).to(device)
     x1 = sample_moons(batch_size).to(device)
 
-    t_train_n, xt_n, ut_n = FM.data_extension_sample_location_and_conditional_flow(x0, x1, t, retrain)
+    t_train_n, xt_n, ut_n = FM.same_time_training_sample_location_and_conditional_flow(x0, x1, t, retrain)
     FM.clear_all()
     for i in range(retrain):
         t_train = t_train_n[i]
