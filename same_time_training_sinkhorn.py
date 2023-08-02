@@ -14,9 +14,9 @@ from torchcfm.conditional_flow_matching import *
 from torchcfm.models.models import *
 from torchcfm.utils import *
 
-savedir = "models/8gaussian-moons_sinkhorn/lr0.02_t100_retrain50_same_time_training"
+savedir = "models/8gaussian-moons_sinkhorn/lr0.02_t100_retrain50_same_time_training_mlp2"
 os.makedirs(savedir, exist_ok=True)
-imgdir = './test/lr0.02_retrain50_t100_same_time_training'
+imgdir = './test/lr0.02_retrain50_t100_same_time_training_mlp2'
 os.makedirs(imgdir, exist_ok=True)
 
 blur = 0.05
@@ -28,7 +28,7 @@ t = 100
 dim = 2
 batch_size = 256
 retrain = 50
-model = MLP(dim=dim, time_varying=True).to(device)
+model = MLP2(dim=dim, time_varying=True).to(device)
 optimizer = torch.optim.Adam(model.parameters())
 FM = SinkhornFlowMatcher(blur = blur, scaling = scaling, backend = backend, lr = lr, device = device)
 

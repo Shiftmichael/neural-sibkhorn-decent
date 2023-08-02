@@ -175,8 +175,9 @@ class SinkhornSampler:
             # plt.yticks([])
             # plt.savefig(f'./test/sinkhorn/sink_{step}')
             self.support = support
-            self.record_sinkdiv.append(vector)   #[time, batch_size, 3*32*32]
-            self.record_support.append(support)  #[time, batch_size, 3*32*32]
+            self.record_sinkdiv.append(vector.detach())   #[time, batch_size, 3*32*32]
+            self.record_support.append(support.detach())  #[time, batch_size, 3*32*32]
+
     @torch.no_grad()
     def sample_state(self):
         return torch.stack(self.record_sinkdiv), torch.stack(self.record_support)
