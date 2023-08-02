@@ -505,5 +505,10 @@ class SinkhornFlowMatcher:
         self.clear_all()
         return torch.stack(t_return), torch.stack(x_return), torch.stack(v_return)
     
+    def sample_all_trajactory(self, x0, x1, t):
+        self.SD.set_bs_t_particles(batch_size=x0.shape[0], T=t, particles=x0)
+        self.SD.sample_trajectory(x1)
+        _, x_traj = self.SD.sample_state()
+        return x_traj
     
 
