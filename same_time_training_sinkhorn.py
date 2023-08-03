@@ -14,9 +14,9 @@ from torchcfm.conditional_flow_matching import *
 from torchcfm.models.models import *
 from torchcfm.utils import *
 
-savedir = "models/8gaussian-moons_sinkhorn/lr0.02_t100_retrain50_same_time_training_mlp2"
+savedir = "models/8gaussian-moons_sinkhorn/lr0.02_t100_retrain20_same_time_training_mlp"
 os.makedirs(savedir, exist_ok=True)
-imgdir = './test/lr0.02_retrain50_t100_same_time_training_mlp2'
+imgdir = './test/lr0.02_retrain20_t100_same_time_training_mlp'
 os.makedirs(imgdir, exist_ok=True)
 
 blur = 0.05
@@ -27,14 +27,14 @@ device = 'cuda:0'
 t = 100
 dim = 2
 batch_size = 256
-retrain = 50
+retrain = 20
 model = MLP2(dim=dim, time_varying=True).to(device)
 optimizer = torch.optim.Adam(model.parameters())
 FM = SinkhornFlowMatcher(blur = blur, scaling = scaling, backend = backend, lr = lr, device = device)
 
 start = time.time()
 print('start training')
-for k in range(1000):
+for k in range(2000):
     optimizer.zero_grad()
 
     x0 = sample_8gaussians(batch_size).to(device)
@@ -68,7 +68,7 @@ for k in range(1000):
         with torch.no_grad():
             traj = node.trajectory(
                 sample_8gaussians(1024).to(device),
-                t_span=torch.linspace(0, 1, 100).to(device),
+                t_span=torch.linspace(0, 2, 100).to(device),
             )
             n = 2000
             traj = traj.to('cpu')
